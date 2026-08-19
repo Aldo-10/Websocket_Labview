@@ -8,6 +8,8 @@ console.log(`Servidor WebSocket corriendo en el puerto ${port}`);
 
 wss.on('connection', (ws) => {
     console.log('Cliente conectado (LabVIEW o web)');
+    // 👇 AGREGA ESTA LÍNEA DE PRUEBA OBLIGATORIA
+    ws.send("CONEXION_EXITOSA_DESDE_RAILWAY");
     ws.send(JSON.stringify({ led_status: true }));
 
 
