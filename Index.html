@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de LED - LabVIEW Cloud</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background: #f0f2f5; }
+        button { padding: 15px 30px; font-size: 18px; cursor: pointer; border: none; border-radius: 5px; color: white; }
+        .on { background-color: #28a745; }
+        .off { background-color: #dc3545; }
+        #status { margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Control Remoto de LabVIEW</h1>
+    <button id="btnLed" class="off" onclick="toggleLed()">Encender LED</button>
+    <div id="status">Desconectado</div>
+
+    <script>
+        // REEMPLAZA CON TU URL DE RAILWAY
+        const socket = new WebSocket('wss://tu-proyecto.up.railway.app');
+        let ledState = false;
+
+        const btn = document.getElementById('btnLed');
+        const statusDiv = document.getElementById('status');
+
+        socket.onopen = () => statusDiv.innerText = "Conectado al servidor de Railway";
+        socket.onclose = () => statusDiv.innerText = "Desconectado";
+
+        // Escuchar si LabVIEW o alguien más cambia el estado
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.led_status !== undefined) {
+                ledState = data.led_status;
+                actualizarInterfaz();
+            }
+        };
+
+        function toggleLed() {
+            ledState = !ledState;
+            // Enviar el comando en formato JSON estricto
+            const mensaje = JSON.stringify({ led_status: ledState });
+            socket.send(mensaje);
+        }
+
+        function actualizarInterfaz() {
+            if (ledState) {
+                btn.innerText = "Apagar LED";
+                btn.className = "on";
+            } else {
+                btn.innerText = "Encender LED";
+                btn.className = "off";
+            }
+        }
+    </script>
+</body>
+</html>
