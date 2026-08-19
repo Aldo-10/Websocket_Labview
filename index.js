@@ -8,6 +8,8 @@ console.log(`Servidor WebSocket corriendo en el puerto ${port}`);
 
 wss.on('connection', (ws) => {
     console.log('Cliente conectado (LabVIEW o web)');
+    ws.send(JSON.stringify({ led_status: true }));
+
 
     ws.on('message', (message) => {
         const dataString = message.toString();
