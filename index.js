@@ -1,17 +1,22 @@
 const { WebSocketServer } = require('ws');
+const http = require('http'); // 👈 Servidor HTTP nativo incluido
 
 // Railway asigna el puerto automáticamente mediante la variable PORT
 const port = process.env.PORT || 8080;
-const wss = new WebSocketServer({ port: port });
+
+// 1. Creamos un servidor HTTP básico para responderle a Railway (Healthcheck)
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Servidor WebSocket Activo OK\n');
+});
+
+// 2. Montamos el servidor WebSocket ENCIMA del servidor HTTP para usar el mismo puerto
+const wss = new WebSocketServer({ server: server });
 
 console.log(`Servidor WebSocket corriendo en el puerto ${port}`);
 
 wss.on('connection', (ws) => {
     console.log('Cliente conectado (LabVIEW o web)');
-    // 👇 AGREGA ESTA LÍNEA DE PRUEBA OBLIGATORIA
-    ws.send("CONEXION_EXITOSA_DESDE_RAILWAY");
-    ws.send(JSON.stringify({ led_status: true }));
-
 
     ws.on('message', (message) => {
         const dataString = message.toString();
@@ -28,4 +33,9 @@ wss.on('connection', (ws) => {
     ws.on('close', () => {
         console.log('Cliente desconectado');
     });
+});
+
+// 3. Encendemos el servidor en el puerto dinámico de Railway
+server.listen(port, () => {
+    console.log(`Servidor HTTP/WS escuchando en el puerto ${port}`);
 });
